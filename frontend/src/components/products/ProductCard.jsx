@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 import { CartContext } from '../../context/cart.context';
 
@@ -7,11 +8,17 @@ function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5 hover:shadow-xl transition">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover= {{ scale: 1.03 }}
+      className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center"
+    >
       <img
-        src={product.imagen}
+        src={product.imagen || 'https://picsum.photos/500'}
         alt={product.nombre}
-        className="w-full h-48 object-cover rounded-xl"
+        className="w-full h-56 object-cover rounded-xl hover:scale-105 transition duration-300"
       />
 
       <h2 className="text-xl font-bold mt-4 dark:text-white">
@@ -35,7 +42,7 @@ function ProductCard({ product }) {
       >
         Agregar al carrito
       </button>
-    </div>
+    </motion.div>
   );
 }
 

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 
+import Admin from './pages/Admin';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
@@ -11,25 +12,58 @@ import Footer from './components/layout/Footer';
 import SidebarCart from './components/layout/SidebarCart';
 
 function App() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] =
+    useState(false);
 
   return (
     <BrowserRouter>
-      <Navbar setIsCartOpen={setIsCartOpen} />
+      <div className="min-h-screen flex flex-col">
+        {/* NAVBAR */}
+        <Navbar
+          setIsCartOpen={setIsCartOpen}
+        />
 
-      <SidebarCart
-        isCartOpen={isCartOpen}
-        setIsCartOpen={setIsCartOpen}
-      />
+        {/* SIDEBAR CART */}
+        <SidebarCart
+          isCartOpen={isCartOpen}
+          setIsCartOpen={setIsCartOpen}
+        />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-      </Routes>
+        {/* PAGES */}
+        <main className="flex-1">
+          <Routes>
 
-      <Footer />
+            <Route
+              path="/admin"
+              element={<Admin />}
+            />
+
+
+            <Route
+              path="/"
+              element={<Home />}
+            />
+
+            <Route
+              path="/login"
+              element={<Login />}
+            />
+
+            <Route
+              path="/cart"
+              element={<Cart />}
+            />
+
+            <Route
+              path="/checkout"
+              element={<Checkout />}
+            />
+          </Routes>
+        </main>
+
+        {/* FOOTER */}
+        <Footer />
+      </div>
     </BrowserRouter>
   );
 }
