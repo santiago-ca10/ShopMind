@@ -4,6 +4,7 @@ import {
   crearPedido,
   obtenerMisPedidos,
   obtenerPedidosAdmin,
+  actualizarEstadoPedido,
 } from "../controllers/pedido.controller.js";
 
 import protect from "../middleware/auth.middleware.js";
@@ -37,6 +38,16 @@ router.get(
   protect,
   verifyRole(["admin"]),
   obtenerPedidosAdmin
+);
+
+/* ========================
+   ACTUALIZAR ESTADO DEL PEDIDO (ADMIN)
+======================== */
+router.put(
+  "/:id/estado",
+  protect,
+  verifyRole(["admin"]),
+  actualizarEstadoPedido
 );
 
 export default router;

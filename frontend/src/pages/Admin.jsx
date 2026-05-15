@@ -5,6 +5,7 @@ import API from "../api/axios";
 function Admin() {
   const [products, setProducts] = useState([]);
   const [dashboard, setDashboard] = useState(null);
+  const [orders, setOrders] = useState([]);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -18,27 +19,43 @@ function Admin() {
   const [productToDelete, setProductToDelete] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // 📦 LOAD DATA
+  /* ========================
+     LOAD ALL DATA (DEBUG REAL)
+  ======================== */
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [productsRes, dashboardRes] = await Promise.all([
-          API.get("/productos"),
-          API.get("/dashboard"),
-        ]);
+        const productsRes = await API.get("/productos");
+        console.log("✔ productos OK");
+
+        const dashboardRes = await API.get("/dashboard");
+        console.log("✔ dashboard OK");
+
+        const ordersRes = await API.get("/pedidos");
+        console.log("✔ pedidos OK");
 
         setProducts(productsRes.data);
         setDashboard(dashboardRes.data);
+        setOrders(ordersRes.data);
+
       } catch (error) {
-        console.error(error);
-        toast.error("Error cargando datos");
+        console.log("🔥 ERROR REAL COMPLETO:");
+        console.log("STATUS:", error.response?.status);
+        console.log("DATA:", error.response?.data);
+        console.log("MESSAGE:", error.message);
+
+        toast.error(
+          error.response?.data?.msg || "Error cargando datos"
+        );
       }
     };
 
     loadData();
   }, []);
 
-  // INPUTS
+  /* ========================
+     INPUTS
+  ======================== */
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -46,7 +63,9 @@ function Admin() {
     });
   };
 
-  // EDIT
+  /* ========================
+     EDIT PRODUCT
+  ======================== */
   const handleEdit = (product) => {
     setEditingProduct(product);
 
@@ -62,7 +81,9 @@ function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // SUBMIT
+  /* ========================
+     CREATE / UPDATE
+  ======================== */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -81,6 +102,7 @@ function Admin() {
 
         toast.success("Producto actualizado ✨");
         setEditingProduct(null);
+
       } else {
         const res = await API.post("/productos", form);
 
@@ -97,13 +119,16 @@ function Admin() {
         imagen: "",
         descripcion: "",
       });
+
     } catch (error) {
-      console.error(error);
+      console.log(error);
       toast.error("Error en operación");
     }
   };
 
-  // DELETE
+  /* ========================
+     DELETE PRODUCT
+  ======================== */
   const handleDelete = async () => {
     try {
       await API.delete(`/productos/${productToDelete}`);
@@ -114,9 +139,31 @@ function Admin() {
 
       setProductToDelete(null);
       toast.success("Producto eliminado 🗑️");
+
     } catch (error) {
-      console.error(error);
+      console.log(error);
       toast.error("Error eliminando");
+    }
+  };
+
+  /* ========================
+     CHANGE ORDER STATUS
+  ======================== */
+  const changeOrderStatus = async (id, estado) => {
+    try {
+      await API.put(`/pedidos/${id}`, { estado });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === id ? { ...o, estado } : o
+        )
+      );
+
+      toast.success("Estado actualizado");
+
+    } catch (error) {
+      console.log(error);
+      toast.error("Error actualizando pedido");
     }
   };
 
@@ -127,7 +174,7 @@ function Admin() {
         Panel Admin
       </h1>
 
-      {/* DASHBOARD */}
+      {/* ================= DASHBOARD ================= */}
       {dashboard && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
 
@@ -139,12 +186,12 @@ function Admin() {
         </div>
       )}
 
-      {/* FORM */}
+      {/* ================= FORM ================= */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-900 p-8 rounded-2xl mb-10 grid grid-cols-1 md:grid-cols-2 gap-5"
       >
-        {Object.keys(form).map((key) => (
+        {Object.keys(form).map((key) =>
           key !== "descripcion" ? (
             <input
               key={key}
@@ -164,18 +211,17 @@ function Admin() {
               className="p-4 rounded-xl border dark:bg-gray-800 dark:text-white md:col-span-2"
             />
           )
-        ))}
+        )}
 
         <button className="bg-black text-white py-4 rounded-xl md:col-span-2">
           {editingProduct ? "Actualizar" : "Crear"}
         </button>
       </form>
 
-      {/* TABLE */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden">
+      {/* ================= PRODUCTS ================= */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden mb-10">
 
         <table className="w-full">
-
           <thead className="bg-black text-white">
             <tr>
               <th className="p-4">Producto</th>
@@ -212,17 +258,71 @@ function Admin() {
                   </button>
 
                 </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= ORDERS ================= */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6">
+
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">
+          Pedidos
+        </h2>
+
+        <table className="w-full">
+          <thead className="bg-black text-white">
+            <tr>
+              <th className="p-3">Usuario</th>
+              <th className="p-3">Total</th>
+              <th className="p-3">Estado</th>
+              <th className="p-3">Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {orders.map((o) => (
+              <tr key={o._id} className="border-b dark:border-gray-700">
+
+                <td className="p-3 dark:text-white">
+                  {o.usuario?.nombre}
+                </td>
+
+                <td className="p-3 dark:text-white">
+                  ${o.total}
+                </td>
+
+                <td className="p-3">
+                  <span className="px-3 py-1 rounded bg-gray-700 text-white">
+                    {o.estado}
+                  </span>
+                </td>
+
+                <td className="p-3">
+                  <select
+                    value={o.estado}
+                    onChange={(e) =>
+                      changeOrderStatus(o._id, e.target.value)
+                    }
+                    className="p-2 rounded"
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="enviado">Enviado</option>
+                    <option value="entregado">Entregado</option>
+                  </select>
+                </td>
 
               </tr>
             ))}
           </tbody>
-
         </table>
       </div>
 
-      {/* MODAL */}
+      {/* ================= MODAL ================= */}
       {productToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl">
 
             <p className="mb-4">¿Eliminar producto?</p>
@@ -240,13 +340,13 @@ function Admin() {
             </div>
 
           </div>
+
         </div>
       )}
     </main>
   );
 }
 
-// mini card component
 const Card = ({ title, value }) => (
   <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow">
     <h2 className="text-gray-500">{title}</h2>

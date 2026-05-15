@@ -7,12 +7,11 @@ import Pedido from "../models/pedido.model.js";
 ======================== */
 export const getStats = async (req, res) => {
   try {
-    // 📦 totales base
     const totalUsuarios = await Usuario.countDocuments();
     const totalProductos = await Producto.countDocuments();
     const totalPedidos = await Pedido.countDocuments();
 
-    // 💰 ventas totales
+    // ventas totales
     const pedidos = await Pedido.find();
 
     const totalVentas = pedidos.reduce(
@@ -20,13 +19,38 @@ export const getStats = async (req, res) => {
       0
     );
 
-    // 📈 pedidos recientes
+    /* ========================
+       GRÁFICO DE VENTAS POR DÍA
+    ======================== */
+
+    const ventasPorDiaMap = {};
+
+    pedidos.forEach((pedido) => {
+      const fecha = new Date(pedido.createdAt)
+        .toISOString()
+        .split("T")[0]; // YYYY-MM-DD
+
+      if (!ventasPorDiaMap[fecha]) {
+        ventasPorDiaMap[fecha] = 0;
+      }
+
+      ventasPorDiaMap[fecha] += pedido.total;
+    });
+
+    const ventasPorDia = Object.entries(ventasPorDiaMap).map(
+      ([date, total]) => ({
+        date,
+        total,
+      })
+    );
+
+    // pedidos recientes
     const ultimosPedidos = await Pedido.find()
       .populate("usuario", "nombre email")
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // 🔥 productos más vendidos (top 5)
+    // productos más vendidos
     const productosVendidos = {};
 
     pedidos.forEach((pedido) => {
@@ -55,9 +79,14 @@ export const getStats = async (req, res) => {
       totalProductos,
       totalPedidos,
       totalVentas,
+
+      
+      ventasPorDia,
+
       ultimosPedidos,
       topProductos,
     });
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Error en dashboard" });

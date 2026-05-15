@@ -122,7 +122,7 @@ export const login =
           'Login exitoso',
         token:
           generateToken(
-            usuario._id
+            usuario
           ),
         usuario: {
           id: usuario._id,

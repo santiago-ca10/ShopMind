@@ -1,11 +1,14 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-const generateToken = (id) => {
+const generateToken = (userId) => {
   return jwt.sign(
-    { id },
-    'shopmind-secret-key',
     {
-      expiresIn: '7d'
+      id: userId,
+      role: userId.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
     }
   );
 };

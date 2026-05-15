@@ -3,7 +3,7 @@ import Usuario from "../models/usuario.model.js";
 import Producto from "../models/producto.model.js";
 
 /* ========================
-   CREAR PEDIDO (CHECKOUT)
+    CREAR PEDIDO (CHECKOUT)
 ======================== */
 export const crearPedido = async (req, res) => {
   try {
@@ -13,29 +13,31 @@ export const crearPedido = async (req, res) => {
       "carrito.producto"
     );
 
-    if (!usuario.carrito.length) {
+    if (!usuario || usuario.carrito.length === 0) {
       return res.status(400).json({ msg: "Carrito vacío" });
     }
 
     let total = 0;
-
     const productosFormateados = [];
 
     for (const item of usuario.carrito) {
       const producto = item.producto;
 
-      // validar stock
+      if (!producto) continue;
+
+      //  validación stock
       if (producto.stock < item.cantidad) {
         return res.status(400).json({
           msg: `Stock insuficiente para ${producto.nombre}`,
         });
       }
 
-      // descontar stock
+      //  descontar stock
       producto.stock -= item.cantidad;
       await producto.save();
 
-      total += producto.precio * item.cantidad;
+      const subtotal = producto.precio * item.cantidad;
+      total += subtotal;
 
       productosFormateados.push({
         producto: producto._id,
@@ -51,14 +53,12 @@ export const crearPedido = async (req, res) => {
       estado: "pendiente",
     });
 
-    // vaciar carrito
+    //  limpiar carrito
     usuario.carrito = [];
     await usuario.save();
 
-    return res.status(201).json({
-      msg: "Pedido creado correctamente",
-      pedido,
-    });
+    return res.status(201).json(pedido);
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Error creando pedido" });
@@ -66,7 +66,7 @@ export const crearPedido = async (req, res) => {
 };
 
 /* ========================
-   MIS PEDIDOS
+    MIS PEDIDOS
 ======================== */
 export const obtenerMisPedidos = async (req, res) => {
   try {
@@ -74,14 +74,14 @@ export const obtenerMisPedidos = async (req, res) => {
       .populate("productos.producto")
       .sort({ createdAt: -1 });
 
-    res.json(pedidos);
+    return res.json(pedidos);
   } catch (error) {
-    res.status(500).json({ msg: "Error obteniendo pedidos" });
+    return res.status(500).json({ msg: "Error obteniendo pedidos" });
   }
 };
 
 /* ========================
-   ADMIN - TODOS LOS PEDIDOS
+    ADMIN - TODOS LOS PEDIDOS
 ======================== */
 export const obtenerPedidosAdmin = async (req, res) => {
   try {
@@ -90,8 +90,39 @@ export const obtenerPedidosAdmin = async (req, res) => {
       .populate("productos.producto")
       .sort({ createdAt: -1 });
 
-    res.json(pedidos);
+    return res.json(pedidos);
   } catch (error) {
-    res.status(500).json({ msg: "Error obteniendo pedidos" });
+    return res.status(500).json({ msg: "Error obteniendo pedidos" });
+  }
+};
+
+/* ========================
+    ACTUALIZAR ESTADO (ADMIN)
+======================== */
+export const actualizarEstadoPedido = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    const estadosValidos = ["pendiente", "enviado", "entregado"];
+
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ msg: "Estado inválido" });
+    }
+
+    const pedido = await Pedido.findById(id);
+
+    if (!pedido) {
+      return res.status(404).json({ msg: "Pedido no encontrado" });
+    }
+
+    pedido.estado = estado;
+    await pedido.save();
+
+    return res.json(pedido);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Error actualizando pedido" });
   }
 };
