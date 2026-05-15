@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import {
+  useState
+} from 'react';
+
+import axios from 'axios';
 
 import { AuthContext }
   from './auth.context';
@@ -18,32 +22,52 @@ function AuthProvider({
         : null;
     });
 
-  // LOGIN
-  const login = (
+  // LOGIN REAL
+  const login = async (
     email,
     password
   ) => {
-    if (
-      email ===
-        'admin@shopmind.com' &&
-      password === '123456'
-    ) {
-      const adminUser = {
-        email,
-        role: 'admin'
-      };
+    try {
+      const response =
+        await axios.post(
+          'http://localhost:3000/api/auth/login',
+          {
+            email,
+            password
+          }
+        );
 
-      setUser(adminUser);
+      const data =
+        response.data;
+
+      // SAVE USER
+      setUser(data.usuario);
 
       localStorage.setItem(
         'shopmind-user',
-        JSON.stringify(adminUser)
+        JSON.stringify(
+          data.usuario
+        )
       );
 
-      return true;
-    }
+      // SAVE TOKEN
+      localStorage.setItem(
+        'shopmind-token',
+        data.token
+      );
 
-    return false;
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error.response?.data
+            ?.error ||
+          'Error login'
+      };
+    }
   };
 
   // LOGOUT
@@ -52,6 +76,10 @@ function AuthProvider({
 
     localStorage.removeItem(
       'shopmind-user'
+    );
+
+    localStorage.removeItem(
+      'shopmind-token'
     );
   };
 

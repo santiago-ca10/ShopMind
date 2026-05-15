@@ -7,29 +7,43 @@ import {
   eliminarProducto,
 } from "../controllers/producto.controller.js";
 
+import protect from "../middleware/auth.middleware.js";
+import verifyRole from "../middleware/role.middleware.js";
+
 const router = Router();
 
-// CREATE
+/* ========================
+   CREATE (ADMIN ONLY)
+======================== */
 router.post(
-  "/productos",
+  "/",
+  protect,
+  verifyRole(["admin"]),
   crearProducto
 );
 
-// READ
-router.get(
-  "/productos",
-  obtenerProductos
-);
+/* ========================
+   READ (PUBLICO)
+======================== */
+router.get("/", obtenerProductos);
 
-// UPDATE
+/* ========================
+   UPDATE (ADMIN ONLY)
+======================== */
 router.put(
-  "/productos/:id",
+  "/:id",
+  protect,
+  verifyRole(["admin"]),
   actualizarProducto
 );
 
-// DELETE
+/* ========================
+   DELETE (ADMIN ONLY)
+======================== */
 router.delete(
-  "/productos/:id",
+  "/:id",
+  protect,
+  verifyRole(["admin"]),
   eliminarProducto
 );
 

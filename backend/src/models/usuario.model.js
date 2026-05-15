@@ -1,29 +1,47 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const usuarioSchema = new mongoose.Schema({
-  nombre: String,
-  email: String,
-
-  carrito: [
+const usuarioSchema =
+  new mongoose.Schema(
     {
-      productoId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Producto"
+      nombre: {
+        type: String,
+        required: true
       },
-      cantidad: Number
-    }
-  ],
 
-  historial: [
+      email: {
+        type: String,
+        required: true,
+        unique: true
+      },
+
+      password: {
+        type: String,
+        required: true
+      },
+
+      role: {
+        type: String,
+        default: 'user'
+      },
+
+      carrito: [
+        {
+          productoId: String,
+          nombre: String,
+          precio: Number,
+          cantidad: Number
+        }
+      ]
+    },
     {
-      productos: [],
-      total: Number,
-      fecha: {
-        type: Date,
-        default: Date.now
-      }
+      timestamps: true
     }
-  ]
-});
+  );
 
-export default mongoose.model("Usuario", usuarioSchema);
+const Usuario =
+  mongoose.model(
+    'Usuario',
+    usuarioSchema
+  );
+
+export default Usuario;

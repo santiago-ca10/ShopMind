@@ -5,6 +5,9 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import productoRoutes from "./routes/producto.routes.js";
 import usuarioRoutes from "./routes/usuario.routes.js";
+import authRoutes from './routes/auth.routes.js';
+import pedidoRoutes from './routes/pedido.routes.js';
+
 
 dotenv.config();
 
@@ -17,7 +20,8 @@ connectDB();
 
 app.use("/api", productoRoutes);
 app.use("/api", usuarioRoutes);
-
+app.use("/api/auth", authRoutes);
+app.use("/api/pedidos", pedidoRoutes);
 app.listen(3000, () => {
   console.log("Servidor corriendo");
 });
