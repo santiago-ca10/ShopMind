@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 
+import ProtectedRoute from './components/ProtectedRoute';
 import Admin from './pages/Admin';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -35,7 +36,11 @@ function App() {
 
             <Route
               path="/admin"
-              element={<Admin />}
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              }
             />
 
 
