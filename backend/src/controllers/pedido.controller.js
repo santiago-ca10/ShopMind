@@ -3,85 +3,93 @@ import Usuario from "../models/usuario.model.js";
 import Producto from "../models/producto.model.js";
 
 /* ========================
-    CREAR PEDIDO (CHECKOUT)
+   CREAR PEDIDO
 ======================== */
 export const crearPedido = async (req, res) => {
   try {
     const usuarioId = req.user.id;
 
-    const usuario = await Usuario.findById(usuarioId).populate(
-      "carrito.producto"
-    );
+    const { productos, total } = req.body;
 
-    if (!usuario || usuario.carrito.length === 0) {
-      return res.status(400).json({ msg: "Carrito vacío" });
-    }
-
-    let total = 0;
-    const productosFormateados = [];
-
-    for (const item of usuario.carrito) {
-      const producto = item.producto;
-
-      if (!producto) continue;
-
-      //  validación stock
-      if (producto.stock < item.cantidad) {
-        return res.status(400).json({
-          msg: `Stock insuficiente para ${producto.nombre}`,
-        });
-      }
-
-      //  descontar stock
-      producto.stock -= item.cantidad;
-      await producto.save();
-
-      const subtotal = producto.precio * item.cantidad;
-      total += subtotal;
-
-      productosFormateados.push({
-        producto: producto._id,
-        cantidad: item.cantidad,
-        precio: producto.precio,
+    if (!productos || productos.length === 0) {
+      return res.status(400).json({
+        msg: "No hay productos",
       });
     }
 
+    // VALIDAR STOCK
+    for (const item of productos) {
+      const productoDB = await Producto.findById(
+        item.producto
+      );
+
+      if (!productoDB) {
+        return res.status(404).json({
+          msg: "Producto no encontrado",
+        });
+      }
+
+      if (productoDB.stock < item.cantidad) {
+        return res.status(400).json({
+          msg: `Stock insuficiente para ${productoDB.nombre}`,
+        });
+      }
+
+      // DESCONTAR STOCK
+      productoDB.stock -= item.cantidad;
+
+      await productoDB.save();
+    }
+
+    // CREAR PEDIDO
     const pedido = await Pedido.create({
       usuario: usuarioId,
-      productos: productosFormateados,
+
+      productos,
+
       total,
+
       estado: "pendiente",
     });
 
-    //  limpiar carrito
-    usuario.carrito = [];
-    await usuario.save();
-
-    return res.status(201).json(pedido);
+    res.status(201).json({
+      msg: "Pedido creado",
+      pedido,
+    });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "Error creando pedido" });
+
+    res.status(500).json({
+      msg: "Error creando pedido",
+    });
   }
 };
 
 /* ========================
-    MIS PEDIDOS
+   MIS PEDIDOS
 ======================== */
 export const obtenerMisPedidos = async (req, res) => {
   try {
-    const pedidos = await Pedido.find({ usuario: req.user.id })
+    const pedidos = await Pedido.find({
+      usuario: req.user.id,
+    })
       .populate("productos.producto")
       .sort({ createdAt: -1 });
 
-    return res.json(pedidos);
+    res.json(pedidos);
+
   } catch (error) {
-    return res.status(500).json({ msg: "Error obteniendo pedidos" });
+    console.log(error);
+
+    res.status(500).json({
+      msg: "Error obteniendo pedidos",
+    });
   }
 };
 
 /* ========================
-    ADMIN - TODOS LOS PEDIDOS
+   ADMIN PEDIDOS
 ======================== */
 export const obtenerPedidosAdmin = async (req, res) => {
   try {
@@ -90,39 +98,48 @@ export const obtenerPedidosAdmin = async (req, res) => {
       .populate("productos.producto")
       .sort({ createdAt: -1 });
 
-    return res.json(pedidos);
+    res.json(pedidos);
+
   } catch (error) {
-    return res.status(500).json({ msg: "Error obteniendo pedidos" });
+    console.log(error);
+
+    res.status(500).json({
+      msg: "Error obteniendo pedidos",
+    });
   }
 };
 
 /* ========================
-    ACTUALIZAR ESTADO (ADMIN)
+   ACTUALIZAR ESTADO
 ======================== */
 export const actualizarEstadoPedido = async (req, res) => {
   try {
     const { id } = req.params;
+
     const { estado } = req.body;
-
-    const estadosValidos = ["pendiente", "enviado", "entregado"];
-
-    if (!estadosValidos.includes(estado)) {
-      return res.status(400).json({ msg: "Estado inválido" });
-    }
 
     const pedido = await Pedido.findById(id);
 
     if (!pedido) {
-      return res.status(404).json({ msg: "Pedido no encontrado" });
+      return res.status(404).json({
+        msg: "Pedido no encontrado",
+      });
     }
 
     pedido.estado = estado;
+
     await pedido.save();
 
-    return res.json(pedido);
+    res.json({
+      msg: "Estado actualizado",
+      pedido,
+    });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "Error actualizando pedido" });
+
+    res.status(500).json({
+      msg: "Error actualizando estado",
+    });
   }
 };

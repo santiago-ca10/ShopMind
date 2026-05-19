@@ -17,6 +17,7 @@ import { AuthContext }
 function Navbar({
   setIsCartOpen
 }) {
+
   const { cart } =
     useContext(CartContext);
 
@@ -57,28 +58,46 @@ function Navbar({
       {!isLoginPage && (
         <div className="flex items-center gap-4">
 
-          {/* AUTH */}
+          {/* USER LOGGED */}
           {user ? (
             <>
-              <Link to="/admin">
-                <button className="bg-blue-500 text-white px-5 py-3 rounded-xl hover:bg-blue-600 transition">
-                  Admin
-                </button>
-              </Link>
 
+              {/* ADMIN */}
+              {user.role === 'admin' && (
+                <Link to="/admin">
+                  <button className="bg-blue-500 text-white px-5 py-3 rounded-xl hover:bg-blue-600 transition">
+                    Administración
+                  </button>
+                </Link>
+              )}
+
+              {/* USER */}
+              {user.role === 'user' && (
+                <Link to="/mis-pedidos">
+                  <button className="bg-indigo-500 text-white px-5 py-3 rounded-xl hover:bg-indigo-600 transition">
+                    Mis pedidos
+                  </button>
+                </Link>
+              )}
+
+              {/* LOGOUT */}
               <button
                 onClick={logout}
                 className="bg-red-500 text-white px-5 py-3 rounded-xl hover:bg-red-600 transition"
               >
-                Logout
+                Cerrar sesión
               </button>
+
             </>
           ) : (
+
+            /* LOGIN */
             <Link to="/login">
               <button className="bg-green-500 text-white px-5 py-3 rounded-xl hover:bg-green-600 transition">
                 Login
               </button>
             </Link>
+
           )}
 
           {/* DARK MODE */}
@@ -103,6 +122,7 @@ function Navbar({
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">
               {cart.length}
             </span>
+
           </button>
 
         </div>

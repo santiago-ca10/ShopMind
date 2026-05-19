@@ -6,8 +6,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Admin from "./pages/Admin";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import MisPedidos from "./pages/MisPedidos";
 
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -35,18 +37,50 @@ function App() {
           <Routes>
 
             {/* HOME */}
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/"
+              element={<Home />}
+            />
 
             {/* LOGIN */}
-            <Route path="/login" element={<Login />} />
+            <Route
+              path="/login"
+              element={<Login />}
+            />
+
+            {/* REGISTER */}
+            <Route
+              path="/register"
+              element={<Register />}
+            />
 
             {/* CART */}
-            <Route path="/cart" element={<Cart />} />
+            <Route
+              path="/cart"
+              element={<Cart />}
+            />
 
             {/* CHECKOUT */}
-            <Route path="/checkout" element={<Checkout />} />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
 
-            {/* ADMIN PROTEGIDO */}
+            {/* MIS PEDIDOS */}
+            <Route
+              path="/mis-pedidos"
+              element={
+                <ProtectedRoute>
+                  <MisPedidos />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ADMIN */}
             <Route
               path="/admin"
               element={

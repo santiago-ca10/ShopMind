@@ -1,16 +1,17 @@
 import {
   useContext,
   useState
-} from 'react';
+} from "react";
 
 import {
-  useNavigate
-} from 'react-router-dom';
+  useNavigate,
+  Link
+} from "react-router-dom";
 
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 import { AuthContext }
-  from '../context/auth.context';
+  from "../context/auth.context";
 
 function Login() {
   const navigate =
@@ -21,8 +22,8 @@ function Login() {
 
   const [form, setForm] =
     useState({
-      email: '',
-      password: ''
+      email: "",
+      password: ""
     });
 
   // HANDLE INPUTS
@@ -49,10 +50,19 @@ function Login() {
         response.success
       ) {
         toast.success(
-          'Bienvenido 🔥'
+          "Bienvenido 🔥"
         );
 
-        navigate('/admin');
+        // REDIRECCIÓN
+        if (
+          response.usuario
+            ?.role === "admin"
+        ) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+
       } else {
         toast.error(
           response.error
@@ -62,10 +72,11 @@ function Login() {
 
   return (
     <main className="min-h-screen bg-gray-100 dark:bg-black flex items-center justify-center px-6 transition-colors duration-300">
+
       <div className="bg-white dark:bg-gray-900 p-10 rounded-3xl shadow-2xl w-full max-w-md">
-        
+
         <h1 className="text-4xl font-bold mb-8 text-center dark:text-white">
-          Login Admin
+          Iniciar Sesión
         </h1>
 
         <form
@@ -74,6 +85,7 @@ function Login() {
           }
           className="flex flex-col gap-5"
         >
+
           <input
             type="email"
             name="email"
@@ -104,23 +116,23 @@ function Login() {
           >
             Iniciar sesión
           </button>
+
         </form>
 
-        <div className="mt-8 bg-gray-100 dark:bg-gray-800 p-4 rounded-xl">
-          
-          <p className="text-sm dark:text-gray-300">
-            Demo Admin:
-          </p>
+        {/* REGISTER */}
+        <p className="text-center mt-6 text-gray-500 dark:text-gray-400">
 
-          <p className="text-sm font-bold dark:text-white">
-            admin@shopmind.com
-          </p>
+          ¿No tienes cuenta?{" "}
 
-          <p className="text-sm font-bold dark:text-white">
-            123456
-          </p>
+          <Link
+            to="/register"
+            className="font-bold text-black dark:text-white"
+          >
+            Crear cuenta
+          </Link>
 
-        </div>
+        </p>
+
       </div>
     </main>
   );

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { CartContext } from './cart.context';
 
 function CartProvider({ children }) {
+
   // LOAD FROM LOCALSTORAGE
   const [cart, setCart] = useState(() => {
     const savedCart =
@@ -29,8 +30,15 @@ function CartProvider({ children }) {
   // REMOVE PRODUCT
   const removeFromCart = (id) => {
     setCart((prev) =>
-      prev.filter((item) => item._id !== id)
+      prev.filter(
+        (item) => item._id !== id
+      )
     );
+  };
+
+  // CLEAR CART
+  const clearCart = () => {
+    setCart([]);
   };
 
   // TOTAL
@@ -45,6 +53,7 @@ function CartProvider({ children }) {
         cart,
         addToCart,
         removeFromCart,
+        clearCart,
         total
       }}
     >

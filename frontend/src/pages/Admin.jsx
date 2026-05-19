@@ -151,7 +151,7 @@ function Admin() {
   ======================== */
   const changeOrderStatus = async (id, estado) => {
     try {
-      await API.put(`/pedidos/${id}`, { estado });
+      await API.put(`/pedidos/${id}/estado`, { estado });
 
       setOrders((prev) =>
         prev.map((o) =>
@@ -305,7 +305,7 @@ function Admin() {
                     onChange={(e) =>
                       changeOrderStatus(o._id, e.target.value)
                     }
-                    className="p-2 rounded"
+                    className="p-2 rounded dark:bg-gray-800 dark:text-white"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="enviado">Enviado</option>
