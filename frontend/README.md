@@ -1,16 +1,71 @@
-# React + Vite
+# 🛍️ ShopMind Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz de usuario del sistema ShopMind, una tienda inteligente con carrito de compras, panel admin y asistente IA.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+##  Funcionalidades
 
-## React Compiler
+- Catálogo de productos dinámico
+- Búsqueda en tiempo real
+- Filtro por categorías
+- Carrito de compras persistente (localStorage)
+- Checkout simulado
+- Asistente IA de recomendaciones
+- Panel de administración
+- Visualización de pedidos del usuario
+- Modo oscuro / claro
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+##  Tecnologías
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React (Vite)
+- Context API
+- Axios
+- Tailwind CSS
+- React Hot Toast
+
+---
+
+##  Estructura del frontend
+
+```text
+src/
+├── api/ # Configuración Axios
+├── components/ # Componentes reutilizables
+├── context/ # Estados globales (carrito, auth, theme)
+├── pages/ # Vistas principales
+├── services/ # Lógica de API
+├── styles/ # Estilos globales
+└── App.jsx
+```
+---
+
+##  Ejecución
+
+```bash
+npm install
+npm run dev
+```
+## Comunicación con backend
+
+El frontend consume la API REST:
+
+- Productos → `/api/productos`
+- Pedidos → `/api/pedidos`
+- Auth → `/api/auth`
+- IA → `/api/ia`
+---
+
+## UI / UX
+- Diseño tipo e-commerce moderno
+- Cards de productos
+- Animaciones suaves
+- Dark mode
+- Responsive design
+---
+## Notas
+- El carrito se guarda en `localStorage`
+- No requiere login para ver productos
+- Algunas funciones requieren autenticación JWT

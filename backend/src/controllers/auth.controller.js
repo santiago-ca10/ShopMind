@@ -1,143 +1,141 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 
-import Usuario from '../models/usuario.model.js';
+import Usuario from "../models/usuario.model.js";
 
-import generateToken from '../utils/generateToken.js';
+import generateToken from "../utils/generateToken.js";
 
+/* =========================
+   REGISTER
+========================= */
+export const register = async (req, res) => {
+  try {
+    const {
+      nombre,
+      email,
+      password
+    } = req.body;
 
-// REGISTER
-export const register =
-  async (req, res) => {
-    try {
-      const {
+    // Validación básica
+    if (!nombre || !email || !password) {
+      return res.status(400).json({
+        error: "Todos los campos son obligatorios",
+      });
+    }
+
+    // Verifica usuario existente
+    const existingUser =
+      await Usuario.findOne({
+        email: email.toLowerCase(),
+      });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: "El usuario ya existe",
+      });
+    }
+
+    // Hash password
+    const salt =
+      await bcrypt.genSalt(10);
+
+    const hashedPassword =
+      await bcrypt.hash(
+        password,
+        salt
+      );
+
+    // Crear usuario
+    const usuario =
+      new Usuario({
         nombre,
-        email,
-        password
-      } = req.body;
-
-      // CHECK USER
-      const existingUser =
-        await Usuario.findOne({
-          email
-        });
-
-      if (existingUser) {
-        return res
-          .status(400)
-          .json({
-            error:
-              'El usuario ya existe'
-          });
-      }
-
-      // HASH PASSWORD
-      const salt =
-        await bcrypt.genSalt(10);
-
-      const hashedPassword =
-        await bcrypt.hash(
-          password,
-          salt
-        );
-
-      // CREATE USER
-      const usuario =
-        new Usuario({
-          nombre,
-          email,
-          password:
-            hashedPassword
-        });
-
-      await usuario.save();
-
-      res.json({
-        message:
-          'Usuario registrado',
-        token:
-          generateToken(
-            usuario._id
-          ),
-        usuario: {
-          id: usuario._id,
-          nombre:
-            usuario.nombre,
-          email:
-            usuario.email,
-          role:
-            usuario.role
-        }
+        email: email.toLowerCase(),
+        password: hashedPassword,
       });
-    } catch (error) {
-      res.status(500).json({
-        error:
-          'Error al registrar'
+
+    await usuario.save();
+
+    res.status(201).json({
+      message: "Usuario registrado",
+      token: generateToken(usuario._id),
+      usuario: {
+        id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        role: usuario.role,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error register:",
+      error.message
+    );
+
+    res.status(500).json({
+      error: "Error al registrar",
+    });
+  }
+};
+
+/* =========================
+   LOGIN
+========================= */
+export const login = async (req, res) => {
+  try {
+    const {
+      email,
+      password
+    } = req.body;
+
+    // Validación básica
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "Todos los campos son obligatorios",
       });
     }
-  };
 
-
-// LOGIN
-export const login =
-  async (req, res) => {
-    try {
-      const {
-        email,
-        password
-      } = req.body;
-
-      // FIND USER
-      const usuario =
-        await Usuario.findOne({
-          email
-        });
-
-      if (!usuario) {
-        return res
-          .status(400)
-          .json({
-            error:
-              'Usuario no encontrado'
-          });
-      }
-
-      // CHECK PASSWORD
-      const isMatch =
-        await bcrypt.compare(
-          password,
-          usuario.password
-        );
-
-      if (!isMatch) {
-        return res
-          .status(400)
-          .json({
-            error:
-              'Contraseña incorrecta'
-          });
-      }
-
-      res.json({
-        message:
-          'Login exitoso',
-        token:
-          generateToken(
-            usuario
-          ),
-        usuario: {
-          id: usuario._id,
-          nombre:
-            usuario.nombre,
-          email:
-            usuario.email,
-          role:
-            usuario.role
-        }
+    // Buscar usuario
+    const usuario =
+      await Usuario.findOne({
+        email: email.toLowerCase(),
       });
-    } catch (error) {
-      res.status(500).json({
-        error:
-          'Error login'
+
+    if (!usuario) {
+      return res.status(400).json({
+        error: "Credenciales inválidas",
       });
     }
-  };
+
+    // Verificar password
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        usuario.password
+      );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        error: "Credenciales inválidas",
+      });
+    }
+
+    res.json({
+      message: "Login exitoso",
+      token: generateToken(usuario._id),
+      usuario: {
+        id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        role: usuario.role,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error login:",
+      error.message
+    );
+
+    res.status(500).json({
+      error: "Error login",
+    });
+  }
+};

@@ -1,35 +1,48 @@
 import jwt from "jsonwebtoken";
 import Usuario from "../models/usuario.model.js";
 
+/**
+ * Middleware de protección de rutas
+ * Verifica JWT y adjunta el usuario autenticado
+ */
 const protect = async (req, res, next) => {
   try {
     let token;
 
+    // Verifica encabezado Authorization
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
-      token =
-        req.headers.authorization.split(" ")[1];
+      token = req.headers.authorization.split(" ")[1];
 
+      // Verifica token
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET
       );
 
-      req.user = await Usuario.findById(decoded.id)
+      // Busca usuario autenticado
+      const user = await Usuario.findById(decoded.id)
         .select("-password");
 
-      console.log(req.user);
+      // Verifica que el usuario exista
+      if (!user) {
+        return res.status(401).json({
+          msg: "Usuario no encontrado",
+        });
+      }
+
+      req.user = user;
 
       next();
     } else {
       return res.status(401).json({
-        msg: "No token",
+        msg: "No autorizado, token requerido",
       });
     }
   } catch (error) {
-    console.log(error);
+    console.error("Error auth middleware:", error.message);
 
     return res.status(401).json({
       msg: "Token inválido",

@@ -2,6 +2,21 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import API from "../api/axios";
 
+/* ========================
+   HELPERS PRO
+======================== */
+const formatPrice = (value) =>
+  Number(value || 0).toLocaleString("es-CO");
+
+const estadoStyles = {
+  pendiente: "bg-yellow-100 text-yellow-700",
+  enviado: "bg-blue-100 text-blue-700",
+  entregado: "bg-green-100 text-green-700",
+};
+
+/* ========================
+   COMPONENT
+======================== */
 function Admin() {
   const [products, setProducts] = useState([]);
   const [dashboard, setDashboard] = useState(null);
@@ -20,33 +35,24 @@ function Admin() {
   const [editingProduct, setEditingProduct] = useState(null);
 
   /* ========================
-     LOAD ALL DATA (DEBUG REAL)
+     LOAD DATA
   ======================== */
   useEffect(() => {
     const loadData = async () => {
       try {
-        const productsRes = await API.get("/productos");
-        console.log("✔ productos OK");
-
-        const dashboardRes = await API.get("/dashboard");
-        console.log("✔ dashboard OK");
-
-        const ordersRes = await API.get("/pedidos");
-        console.log("✔ pedidos OK");
+        const [productsRes, dashboardRes, ordersRes] =
+          await Promise.all([
+            API.get("/productos"),
+            API.get("/dashboard"),
+            API.get("/pedidos"),
+          ]);
 
         setProducts(productsRes.data);
         setDashboard(dashboardRes.data);
         setOrders(ordersRes.data);
-
       } catch (error) {
-        console.log("🔥 ERROR REAL COMPLETO:");
-        console.log("STATUS:", error.response?.status);
-        console.log("DATA:", error.response?.data);
-        console.log("MESSAGE:", error.message);
-
-        toast.error(
-          error.response?.data?.msg || "Error cargando datos"
-        );
+        console.log(error);
+        toast.error("Error cargando datos");
       }
     };
 
@@ -54,7 +60,7 @@ function Admin() {
   }, []);
 
   /* ========================
-     INPUTS
+     FORM
   ======================== */
   const handleChange = (e) => {
     setForm({
@@ -64,7 +70,7 @@ function Admin() {
   };
 
   /* ========================
-     EDIT PRODUCT
+     EDIT
   ======================== */
   const handleEdit = (product) => {
     setEditingProduct(product);
@@ -100,9 +106,8 @@ function Admin() {
           )
         );
 
-        toast.success("Producto actualizado ✨");
+        toast.success("Producto actualizado");
         setEditingProduct(null);
-
       } else {
         const res = await API.post("/productos", form);
 
@@ -119,7 +124,6 @@ function Admin() {
         imagen: "",
         descripcion: "",
       });
-
     } catch (error) {
       console.log(error);
       toast.error("Error en operación");
@@ -127,7 +131,7 @@ function Admin() {
   };
 
   /* ========================
-     DELETE PRODUCT
+     DELETE
   ======================== */
   const handleDelete = async () => {
     try {
@@ -139,10 +143,9 @@ function Admin() {
 
       setProductToDelete(null);
       toast.success("Producto eliminado 🗑️");
-
     } catch (error) {
       console.log(error);
-      toast.error("Error eliminando");
+      toast.error("Error eliminando producto");
     }
   };
 
@@ -160,7 +163,6 @@ function Admin() {
       );
 
       toast.success("Estado actualizado");
-
     } catch (error) {
       console.log(error);
       toast.error("Error actualizando pedido");
@@ -178,7 +180,7 @@ function Admin() {
       {dashboard && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
 
-          <Card title="Ventas" value={`$${dashboard.totalVentas}`} />
+          <Card title="Ventas" value={`$${formatPrice(dashboard.totalVentas)}`} />
           <Card title="Pedidos" value={dashboard.totalPedidos} />
           <Card title="Productos" value={dashboard.totalProductos} />
           <Card title="Usuarios" value={dashboard.totalUsuarios} />
@@ -238,26 +240,31 @@ function Admin() {
 
                 <td className="p-4 dark:text-white">{p.nombre}</td>
                 <td className="p-4 dark:text-gray-300">{p.categoria}</td>
-                <td className="p-4 dark:text-white">${p.precio}</td>
+
+                <td className="p-4 dark:text-white">
+                  ${formatPrice(p.precio)}
+                </td>
+
                 <td className="p-4 dark:text-white">{p.stock}</td>
 
                 <td className="p-4 flex gap-2">
 
                   <button
                     onClick={() => handleEdit(p)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition"
                   >
                     Editar
                   </button>
 
                   <button
                     onClick={() => setProductToDelete(p._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
                   >
                     Eliminar
                   </button>
 
                 </td>
+
               </tr>
             ))}
           </tbody>
@@ -272,6 +279,7 @@ function Admin() {
         </h2>
 
         <table className="w-full">
+
           <thead className="bg-black text-white">
             <tr>
               <th className="p-3">Usuario</th>
@@ -290,11 +298,11 @@ function Admin() {
                 </td>
 
                 <td className="p-3 dark:text-white">
-                  ${o.total}
+                  ${formatPrice(o.total)}
                 </td>
 
                 <td className="p-3">
-                  <span className="px-3 py-1 rounded bg-gray-700 text-white">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${estadoStyles[o.estado]}`}>
                     {o.estado}
                   </span>
                 </td>
@@ -305,7 +313,7 @@ function Admin() {
                     onChange={(e) =>
                       changeOrderStatus(o._id, e.target.value)
                     }
-                    className="p-2 rounded dark:bg-gray-800 dark:text-white"
+                    className="p-2 rounded dark:bg-gray-800 dark:text-white border dark:border-gray-700"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="enviado">Enviado</option>
@@ -316,6 +324,7 @@ function Admin() {
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
 
@@ -347,10 +356,15 @@ function Admin() {
   );
 }
 
+/* ========================
+   CARD
+======================== */
 const Card = ({ title, value }) => (
-  <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow">
-    <h2 className="text-gray-500">{title}</h2>
-    <p className="text-3xl font-bold dark:text-white">{value}</p>
+  <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border dark:border-gray-800">
+    <h2 className="text-gray-500 text-sm">{title}</h2>
+    <p className="text-3xl font-bold dark:text-white mt-2">
+      {value}
+    </p>
   </div>
 );
 

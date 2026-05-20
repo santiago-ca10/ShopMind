@@ -1,17 +1,19 @@
-const verifyRole = (rolesPermitidos) => {
+/**
+ * Middleware de autorización por roles
+ * Permite acceso solo a roles autorizados
+ */
+const verifyRole = (allowedRoles = []) => {
   return (req, res, next) => {
 
-    console.log("ROLE:", req.user?.role);
-
+    // Verifica autenticación
     if (!req.user) {
       return res.status(401).json({
         msg: "No autenticado",
       });
     }
 
-    if (
-      !rolesPermitidos.includes(req.user.role)
-    ) {
+    // Verifica permisos
+    if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         msg: "No autorizado",
       });

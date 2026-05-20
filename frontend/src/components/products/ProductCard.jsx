@@ -88,7 +88,7 @@ function ProductCard({ product }) {
           mt-4
           dark:text-white
         ">
-          ${product.precio.toLocaleString()}
+          ${product.precio.toLocaleString("es-CO")}
         </p>
 
         {/* CATEGORY */}

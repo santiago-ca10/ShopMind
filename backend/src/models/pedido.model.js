@@ -7,24 +7,47 @@ const pedidoSchema = new mongoose.Schema(
       ref: "Usuario",
       required: true,
     },
+
     productos: [
       {
         producto: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Producto",
+          required: true,
         },
-        cantidad: Number,
-        precio: Number,
+
+        cantidad: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+
+        precio: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
       },
     ],
-    total: Number,
+
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
     estado: {
       type: String,
       enum: ["pendiente", "enviado", "entregado"],
       default: "pendiente",
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export default mongoose.model("Pedido", pedidoSchema);
+export default mongoose.model(
+  "Pedido",
+  pedidoSchema
+);

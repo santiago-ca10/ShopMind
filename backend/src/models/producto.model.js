@@ -1,37 +1,48 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const productoSchema =
-  new mongoose.Schema({
+const productoSchema = new mongoose.Schema(
+  {
     nombre: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     categoria: {
-      type: String
+      type: String,
+      required: true,
+      trim: true,
     },
 
     descripcion: {
-      type: String
+      type: String,
+      trim: true,
     },
 
     imagen: {
-      type: String
+      type: String,
+      trim: true,
     },
 
     precio: {
       type: Number,
-      required: true
+      required: true,
+      min: 0,
     },
 
     stock: {
       type: Number,
-      default: 0
-    }
-  });
+      default: 0,
+      min: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const Producto = mongoose.model(
-  'Producto',
+  "Producto",
   productoSchema
 );
 
