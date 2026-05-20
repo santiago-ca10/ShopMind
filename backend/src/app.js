@@ -8,6 +8,7 @@ import productoRoutes from "./routes/producto.routes.js";
 import usuarioRoutes from "./routes/usuario.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import pedidoRoutes from "./routes/pedido.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 
 dotenv.config();
@@ -41,6 +42,9 @@ app.use("/api/auth", authRoutes);
 
 // pedidos
 app.use("/api/pedidos", pedidoRoutes);
+
+// IA
+app.use("/api/ia", aiRoutes);
 
 // dashboard
 app.use("/api/dashboard", dashboardRoutes);

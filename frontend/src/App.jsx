@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import MisPedidos from "./pages/MisPedidos";
+import Assistant from "./pages/Assistant";
 
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -88,6 +89,12 @@ function App() {
                   <Admin />
                 </ProtectedRoute>
               }
+            />
+
+            {/* ASSISTANT */}
+            <Route
+              path="/assistant"
+              element={<Assistant />}
             />
 
           </Routes>

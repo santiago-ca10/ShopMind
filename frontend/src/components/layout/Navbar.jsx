@@ -56,7 +56,14 @@ function Navbar({
 
       {/* ACTIONS */}
       {!isLoginPage && (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+
+          {/* IA */}
+          <Link to="/assistant">
+            <button className="bg-purple-600 text-white px-5 py-3 rounded-xl hover:bg-purple-700 transition">
+              🤖 IA
+            </button>
+          </Link>
 
           {/* USER LOGGED */}
           {user ? (
