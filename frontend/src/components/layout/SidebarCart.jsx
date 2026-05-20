@@ -36,7 +36,7 @@ function SidebarCart({
           className="
             fixed
             inset-0
-            bg-black/50
+            bg-black/40
             z-40
           "
         />
@@ -49,7 +49,7 @@ function SidebarCart({
           top-0
           right-0
           h-full
-          w-[380px]
+          w-[390px]
           bg-white
           dark:bg-gray-900
           shadow-2xl
@@ -77,21 +77,39 @@ function SidebarCart({
           dark:border-gray-700
         ">
 
-          <h2 className="
-            text-2xl
-            font-bold
-            dark:text-white
-          ">
-            🛒 Carrito
-          </h2>
+          <div>
+            <h2 className="
+              text-2xl
+              font-bold
+              dark:text-white
+            ">
+              🛒 Carrito
+            </h2>
+
+            <p className="
+              text-sm
+              text-gray-500
+              dark:text-gray-400
+            ">
+              {cart.length}
+              {" "}
+              productos agregados
+            </p>
+          </div>
 
           <button
             onClick={() =>
               setIsCartOpen(false)
             }
             className="
-              text-xl
+              w-10
+              h-10
+              rounded-full
+              bg-gray-100
+              dark:bg-gray-800
               dark:text-white
+              hover:scale-105
+              transition
             "
           >
             ✖
@@ -109,12 +127,31 @@ function SidebarCart({
 
           {cart.length === 0 ? (
 
-            <p className="
-              text-gray-500
-              dark:text-gray-400
+            <div className="
+              h-full
+              flex
+              flex-col
+              justify-center
+              items-center
+              text-center
             ">
-              Tu carrito está vacío
-            </p>
+
+              <p className="
+                text-6xl
+                mb-4
+              ">
+                🛒
+              </p>
+
+              <p className="
+                text-gray-500
+                dark:text-gray-400
+                text-lg
+              ">
+                Tu carrito está vacío
+              </p>
+
+            </div>
 
           ) : (
 
@@ -123,106 +160,198 @@ function SidebarCart({
               <div
                 key={item._id}
                 className="
-                  border
-                  dark:border-gray-700
-                  rounded-2xl
+                  rounded-3xl
                   p-4
-                  shadow-sm
                   bg-gray-50
                   dark:bg-gray-800
+                  border
+                  dark:border-gray-700
+                  shadow-sm
                 "
               >
 
-                {/* NAME */}
-                <h3 className="
-                  font-bold
-                  text-lg
-                  dark:text-white
-                ">
-                  {item.nombre}
-                </h3>
-
-                {/* PRICE */}
-                <p className="
-                  text-gray-600
-                  dark:text-gray-300
-                  mt-1
-                ">
-                  $
-                  {(
-                    item.precio *
-                    item.cantidad
-                  ).toLocaleString('es-CO')}
-                </p>
-
-                {/* QUANTITY */}
                 <div className="
                   flex
-                  items-center
-                  gap-3
-                  mt-4
+                  gap-4
                 ">
 
-                  <button
-                    onClick={() =>
-                      decreaseQuantity(
-                        item._id
-                      )
+                  {/* IMAGE */}
+                  <img
+                    src={
+                      item.imagen ||
+                      'https://picsum.photos/200'
                     }
+                    alt={item.nombre}
                     className="
-                      w-8
-                      h-8
-                      rounded-full
-                      bg-gray-300
-                      dark:bg-gray-700
-                      dark:text-white
+                      w-24
+                      h-24
+                      rounded-2xl
+                      object-cover
                     "
-                  >
-                    -
-                  </button>
+                  />
 
-                  <span className="
-                    font-bold
-                    dark:text-white
+                  {/* INFO */}
+                  <div className="
+                    flex-1
+                    flex
+                    flex-col
+                    justify-between
                   ">
-                    {item.cantidad}
-                  </span>
 
-                  <button
-                    onClick={() =>
-                      increaseQuantity(
-                        item._id
-                      )
-                    }
-                    className="
-                      w-8
-                      h-8
-                      rounded-full
-                      bg-black
-                      text-white
-                    "
-                  >
-                    +
-                  </button>
+                    <div>
+
+                      <h3 className="
+                        font-bold
+                        text-lg
+                        dark:text-white
+                      ">
+                        {item.nombre}
+                      </h3>
+
+                      <p className="
+                        text-sm
+                        text-gray-500
+                        dark:text-gray-400
+                        mt-1
+                      ">
+                        $
+                        {item.precio.toLocaleString(
+                          'es-CO'
+                        )}
+                      </p>
+
+                    </div>
+
+                    {/* CONTROLS */}
+                    <div className="
+                      flex
+                      items-center
+                      justify-between
+                      mt-4
+                    ">
+
+                      {/* QUANTITY */}
+                      <div className="
+                        flex
+                        items-center
+                        gap-3
+                        bg-white
+                        dark:bg-gray-900
+                        px-3
+                        py-2
+                        rounded-full
+                        shadow-sm
+                      ">
+
+                        <button
+                          onClick={() =>
+                            decreaseQuantity(
+                              item._id
+                            )
+                          }
+                          className="
+                            w-8
+                            h-8
+                            rounded-full
+                            bg-gray-200
+                            dark:bg-gray-700
+                            dark:text-white
+                            hover:scale-105
+                            transition
+                          "
+                        >
+                          -
+                        </button>
+
+                        <span className="
+                          font-bold
+                          dark:text-white
+                        ">
+                          {item.cantidad}
+                        </span>
+
+                        <button
+                          onClick={() =>
+                            increaseQuantity(
+                              item._id
+                            )
+                          }
+                          className="
+                            w-8
+                            h-8
+                            rounded-full
+                            bg-black
+                            text-white
+                            hover:scale-105
+                            transition
+                          "
+                        >
+                          +
+                        </button>
+
+                      </div>
+
+                      {/* DELETE */}
+                      <button
+                        onClick={() =>
+                          removeFromCart(
+                            item._id
+                          )
+                        }
+                        className="
+                          bg-red-500
+                          hover:bg-red-600
+                          text-white
+                          px-4
+                          py-2
+                          rounded-full
+                          text-sm
+                          transition
+                        "
+                      >
+                        Eliminar
+                      </button>
+
+                    </div>
+
+                  </div>
 
                 </div>
 
-                {/* REMOVE */}
-                <button
-                  onClick={() =>
-                    removeFromCart(
-                      item._id
-                    )
-                  }
-                  className="
-                    mt-4
+                {/* SUBTOTAL */}
+                <div className="
+                  mt-4
+                  pt-4
+                  border-t
+                  dark:border-gray-700
+                  flex
+                  justify-between
+                  items-center
+                ">
+
+                  <span className="
+                    text-gray-500
+                    dark:text-gray-400
                     text-sm
-                    text-red-500
-                    hover:underline
-                  "
-                >
-                  Eliminar
-                </button>
+                  ">
+                    Subtotal
+                  </span>
+
+                  <span className="
+                    font-bold
+                    text-lg
+                    dark:text-white
+                  ">
+                    $
+                    {(
+                      item.precio *
+                      item.cantidad
+                    ).toLocaleString(
+                      'es-CO'
+                    )}
+                  </span>
+
+                </div>
 
               </div>
 
@@ -237,19 +366,37 @@ function SidebarCart({
           border-t
           dark:border-gray-700
           p-5
+          bg-white
+          dark:bg-gray-900
         ">
 
-          <h3 className="
-            text-2xl
-            font-bold
-            mb-4
-            dark:text-white
+          <div className="
+            flex
+            justify-between
+            items-center
+            mb-5
           ">
-            Total:
-            {" "}
-            $
-            {total.toLocaleString('es-CO')}
-          </h3>
+
+            <span className="
+              text-lg
+              text-gray-500
+              dark:text-gray-400
+            ">
+              Total
+            </span>
+
+            <h3 className="
+              text-3xl
+              font-bold
+              dark:text-white
+            ">
+              $
+              {total.toLocaleString(
+                'es-CO'
+              )}
+            </h3>
+
+          </div>
 
           <Link to="/checkout">
 
@@ -259,9 +406,11 @@ function SidebarCart({
                 bg-black
                 text-white
                 py-4
-                rounded-xl
+                rounded-2xl
                 hover:bg-gray-800
                 transition
+                text-lg
+                font-semibold
               "
             >
               Finalizar compra

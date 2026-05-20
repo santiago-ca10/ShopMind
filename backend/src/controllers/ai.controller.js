@@ -3,41 +3,107 @@ import Producto from "../models/producto.model.js";
 
 export const chatIA = async (req, res) => {
   try {
-    const { mensaje } = req.body;
+    const { mensaje, historial = [] } = req.body;
 
+    const mensajeLower = mensaje.toLowerCase();
+
+    // 🔥 PALABRAS CLAVE → CATEGORÍAS
+    const categoriasIA = {
+      "pen drive": ["tecnología", "usb"],
+      memoria: ["tecnología", "usb"],
+      usb: ["tecnología", "usb"],
+      tecnologia: ["tecnología"],
+      tecnología: ["tecnología"],
+
+      snack: ["snacks"],
+      snacks: ["snacks"],
+      papitas: ["snacks"],
+      papas: ["snacks"],
+      dulces: ["snacks"],
+      galletas: ["snacks"],
+
+      bebida: ["bebidas"],
+      bebidas: ["bebidas"],
+      gaseosa: ["bebidas"],
+      agua: ["bebidas"],
+    };
+
+    // 🔥 TRAER PRODUCTOS
     const productos = await Producto.find().lean();
 
-    const productosTexto = productos
-      .slice(0, 30)
-      .map((p) => `${p._id} | ${p.nombre} | ${p.categoria} | ${p.precio}`)
+    // 🔥 FILTRO INTELIGENTE
+    let productosFiltrados = productos;
+
+    for (const key in categoriasIA) {
+      if (mensajeLower.includes(key)) {
+        productosFiltrados = productos.filter((p) =>
+          categoriasIA[key].some((cat) =>
+            p.categoria?.toLowerCase().includes(cat)
+          ) ||
+          p.nombre?.toLowerCase().includes(key)
+        );
+
+        break;
+      }
+    }
+
+    // 🔥 CATÁLOGO IA
+    const productosTexto = productosFiltrados
+      .slice(0, 20)
+      .map(
+        (p) =>
+          `${p._id} | ${p.nombre} | ${p.categoria} | ${p.precio}`
+      )
       .join("\n");
 
+    // 🔥 HISTORIAL
+    const historialTexto = historial
+      .filter((m) => m.text)
+      .map(
+        (m) =>
+          `${m.role === "user" ? "Usuario" : "IA"}: ${m.text}`
+      )
+      .join("\n");
+
+    // 🔥 PROMPT ULTRA CONTROLADO
     const prompt = `
 Eres "ShopMind IA", un asistente de compras para una tienda online.
 
 🚨 REGLAS OBLIGATORIAS:
-- SOLO puedes usar productos del catálogo.
-- NO inventes productos, precios ni categorías.
-- Máximo 3 productos por respuesta.
-- Si no existe el producto: responde solo con el mensaje, sin IDs.
-- NO actúes como chatbot general.
+- SOLO puedes recomendar productos del catálogo.
+- NO inventes productos.
+- NO inventes precios.
+- NO inventes categorías.
+- Máximo 3 productos.
+- Si no hay productos:
+  MENSAJE: No tenemos ese producto disponible.
+  IDS:
 
-📦 FORMATO DE SALIDA OBLIGATORIO (responde EXACTAMENTE así, sin cambiar nada):
+⚠️ FORMATO OBLIGATORIO.
+⚠️ SIEMPRE debes devolver IDS válidos.
+⚠️ NUNCA respondas sin IDS.
 
-MENSAJE: (texto corto explicando la recomendación)
+Formato exacto:
+
+MENSAJE: texto corto
 IDS: id1,id2,id3
 
-Ejemplo real:
-MENSAJE: Aquí tienes unas buenas opciones de snacks.
-IDS: 6a03d944130efcdd7348d614,6a03d944130efcdd7348d615
+Ejemplo:
+
+MENSAJE: Te recomiendo estas opciones.
+IDS: 661aa12,661aa13
 
 📚 CATÁLOGO:
 ${productosTexto}
+
+📝 CONVERSACIÓN:
+${historialTexto || "Sin historial"}
 
 👤 USUARIO:
 ${mensaje}
 `;
 
+    // 🔥 OLLAMA
     const response = await axios.post(
       "http://localhost:11434/api/generate",
       {
@@ -47,43 +113,86 @@ ${mensaje}
       }
     );
 
-    const raw = response.data.response.replace(/\r/g, "").trim();
-    console.log("RAW IA RESPONSE:", raw);
+    const raw = response.data.response
+      .replace(/\r/g, "")
+      .trim();
 
-    // Extraer MENSAJE
-    const mensajeMatch = raw.match(/MENSAJE:\s*(.+)/);
-    const mensajeTexto = mensajeMatch
-      ? mensajeMatch[1].trim()
-      : "Aquí tienes mis recomendaciones.";
+    console.log("RAW IA:", raw);
 
-    // Extraer IDS
-    const idsMatch = raw.match(/IDS:\s*([a-f0-9,\s]+)/i);
+    // 🔥 EXTRAER MENSAJE
+    const mensajeMatch =
+      raw.match(/MENSAJE:\s*(.+)/i);
+
+    const mensajeTexto =
+      mensajeMatch
+        ? mensajeMatch[1].trim()
+        : "Aquí tienes algunas recomendaciones.";
+
+    // 🔥 EXTRAER IDS
+    const idsMatch =
+      raw.match(/IDS:\s*([a-f0-9,\s]+)/i);
+
     let productosRecomendados = [];
 
+    // ✅ SI IA DEVUELVE IDS
     if (idsMatch) {
+
       const ids = idsMatch[1]
         .split(",")
         .map((id) => id.trim())
         .filter(Boolean);
 
-      productosRecomendados = productos
-        .filter((p) => ids.includes(p._id.toString()))
+      productosRecomendados =
+        productos.filter((p) =>
+          ids.includes(p._id.toString())
+        )
         .map((p) => ({
+          _id: p._id,
+          nombre: p.nombre,
+          precio: p.precio,
+          imagen: p.imagen || null,
+          categoria: p.categoria,
+          stock: p.stock || 0,
+        }));
+
+    }
+
+    // 🔥 FALLBACK AUTOMÁTICO
+    // Si la IA falla → mostramos productos igual
+    if (
+      productosRecomendados.length === 0
+    ) {
+
+      productosRecomendados =
+        productosFiltrados
+          .slice(0, 3)
+          .map((p) => ({
             _id: p._id,
             nombre: p.nombre,
             precio: p.precio,
             imagen: p.imagen || null,
             categoria: p.categoria,
-        }));
+            stock: p.stock || 0,
+          }));
+
     }
 
+    // 🔥 RESPUESTA FINAL
     return res.json({
       respuesta: mensajeTexto,
       productos: productosRecomendados,
     });
 
   } catch (error) {
-    console.log("❌ IA ERROR:", error.message);
-    return res.status(500).json({ msg: "Error IA" });
+
+    console.log(
+      "❌ IA ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      msg: "Error IA",
+    });
+
   }
 };
