@@ -1,16 +1,32 @@
-import { Router } from "express";
-import {
-  agregarAlCarrito,
-  verCarrito,
-  comprar
-} from "../controllers/usuario.controller.js";
-import { crearUsuario } from "../controllers/usuario.controller.js";
-    
-const router = Router();
+import express from "express";
 
-router.post("/carrito", agregarAlCarrito);
-router.get("/carrito/:usuarioId", verCarrito);
-router.post("/comprar/:usuarioId", comprar);
-router.post("/usuarios", crearUsuario);
+import {
+  comprar,
+  crearUsuario
+} from "../controllers/usuario.controller.js";
+
+const router = express.Router();
+
+/*
+|--------------------------------------------------------------------------
+| Usuarios
+|--------------------------------------------------------------------------
+*/
+
+router.post(
+  "/crear",
+  crearUsuario
+);
+
+/*
+|--------------------------------------------------------------------------
+| Compras
+|--------------------------------------------------------------------------
+*/
+
+router.post(
+  "/comprar",
+  comprar
+);
 
 export default router;

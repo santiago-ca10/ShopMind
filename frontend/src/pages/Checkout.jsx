@@ -7,53 +7,63 @@ import API from "../api/axios";
 import { CartContext } from "../context/cart.context";
 
 function Checkout() {
+
   const navigate = useNavigate();
 
-  const { cart, clearCart } = useContext(CartContext);
+  const {
+    cart,
+    clearCart
+  } = useContext(CartContext);
 
-  // TOTAL
+  // TOTAL REAL
   const total = cart.reduce(
-    (acc, item) => acc + item.precio,
+    (acc, item) =>
+      acc + (item.precio * item.cantidad),
     0
   );
 
   // CHECKOUT
   const handleCheckout = async () => {
+
     try {
-      const token = localStorage.getItem(
-        "shopmind-token"
-      );
+
+      const token =
+        localStorage.getItem(
+          "shopmind-token"
+        );
 
       // VALIDAR LOGIN
       if (!token) {
+
         toast.error(
           "Debes iniciar sesión"
         );
 
         navigate("/login");
+
         return;
       }
 
       // FORMATEAR PRODUCTOS
-      const productos = cart.map((item) => ({
-        producto: item._id,
-        cantidad: 1,
-        precio: item.precio,
-      }));
+      const productos = cart.map(
+        (item) => ({
+          producto: item._id,
+          cantidad: item.cantidad,
+          precio: item.precio
+        })
+      );
 
       // ENVIAR PEDIDO
-      const response = await API.post(
+      await API.post(
         "/pedidos/checkout",
         {
           productos,
-          total,
+          total
         }
       );
 
-      console.log(response.data);
-
       toast.success(
-        "Compra realizada 🎉"
+        "Compra realizada"
       );
 
       // LIMPIAR CARRITO
@@ -63,94 +73,283 @@ function Checkout() {
       navigate("/mis-pedidos");
 
     } catch (error) {
-      console.log(error);
 
       console.log(
-        "🔥 ERROR CHECKOUT:"
-      );
-
-      console.log(
-        error.response?.data
+        "ERROR CHECKOUT:",
+        error.response?.data ||
+        error.message
       );
 
       toast.error(
         error.response?.data?.msg ||
-          "Error checkout"
+        "Error checkout"
       );
     }
+
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 dark:bg-black p-10 transition-colors duration-300">
 
-      <h1 className="text-4xl font-bold mb-10 dark:text-white">
-        Checkout
-      </h1>
+    <main
+      className="
+        min-h-screen
+        bg-gray-100
+        dark:bg-black
+        p-6
+        md:p-10
+        transition-colors
+      "
+    >
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
+      {/* HEADER */}
+      <div className="mb-8">
+
+        <h1
+          className="
+            text-4xl
+            font-black
+            dark:text-white
+          "
+        >
+          Checkout
+        </h1>
+
+        <p
+          className="
+            text-gray-500
+            dark:text-gray-400
+            mt-2
+          "
+        >
+          Revisa tus productos antes de finalizar la compra.
+        </p>
+
+      </div>
+
+      {/* CARD */}
+      <div
+        className="
+          bg-white
+          dark:bg-gray-900
+          rounded-3xl
+          shadow-xl
+          overflow-hidden
+          border
+          border-gray-200
+          dark:border-gray-800
+        "
+      >
 
         {/* PRODUCTOS */}
-        <div className="space-y-5">
+        <div className="p-6 md:p-8">
 
           {cart.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-300">
-              No hay productos en el carrito
-            </p>
-          ) : (
-            cart.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-5 border-b pb-5 dark:border-gray-700"
+
+            <div
+              className="
+                py-20
+                text-center
+              "
+            >
+
+              <p
+                className="
+                  text-gray-500
+                  dark:text-gray-400
+                  text-lg
+                "
               >
+                No hay productos en el carrito
+              </p>
 
-                <img
-                  src={item.imagen}
-                  alt={item.nombre}
-                  className="w-24 h-24 object-cover rounded-xl"
-                />
+            </div>
 
-                <div className="flex-1">
+          ) : (
 
-                  <h2 className="text-xl font-bold dark:text-white">
-                    {item.nombre}
-                  </h2>
+            <div className="space-y-5">
 
-                  <p className="text-gray-600 dark:text-gray-300">
-                    ${item.precio}
-                  </p>
+              {cart.map((item) => (
 
-                  <p className="text-sm text-gray-400">
-                    Categoría: {item.categoria}
-                  </p>
+                <div
+                  key={item._id}
+                  className="
+                    flex
+                    gap-4
+                    items-center
+                    border-b
+                    pb-5
+                    dark:border-gray-800
+                  "
+                >
+
+                  {/* IMAGE */}
+                  <img
+                    src={
+                      item.imagen ||
+                      "https://placehold.co/100x100"
+                    }
+                    alt={item.nombre}
+                    className="
+                      w-24
+                      h-24
+                      rounded-2xl
+                      object-cover
+                      bg-gray-100
+                    "
+                  />
+
+                  {/* INFO */}
+                  <div className="flex-1">
+
+                    <h2
+                      className="
+                        text-xl
+                        font-bold
+                        dark:text-white
+                      "
+                    >
+                      {item.nombre}
+                    </h2>
+
+                    <p
+                      className="
+                        text-sm
+                        text-gray-500
+                        dark:text-gray-400
+                        mt-1
+                      "
+                    >
+                      Categoría:
+                      {" "}
+                      {item.categoria}
+                    </p>
+
+                    <div
+                      className="
+                        flex
+                        items-center
+                        gap-4
+                        mt-3
+                      "
+                    >
+
+                      <span
+                        className="
+                          text-sm
+                          px-3
+                          py-1
+                          rounded-full
+                          bg-gray-200
+                          dark:bg-gray-800
+                          dark:text-white
+                        "
+                      >
+                        Cantidad:
+                        {" "}
+                        {item.cantidad}
+                      </span>
+
+                      <span
+                        className="
+                          font-bold
+                          text-lg
+                          dark:text-white
+                        "
+                      >
+                        $
+                        {(
+                          item.precio *
+                          item.cantidad
+                        ).toLocaleString("es-CO")}
+                      </span>
+
+                    </div>
+
+                  </div>
 
                 </div>
 
-              </div>
-            ))
+              ))}
+
+            </div>
+
           )}
 
         </div>
 
-        {/* TOTAL */}
-        <div className="mt-10 flex justify-between items-center">
+        {/* FOOTER */}
+        {cart.length > 0 && (
 
-          <h2 className="text-3xl font-bold dark:text-white">
-            Total: ${total}
-          </h2>
-
-          <button
-            onClick={handleCheckout}
-            disabled={cart.length === 0}
-            className="bg-black text-white px-8 py-4 rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+          <div
+            className="
+              border-t
+              dark:border-gray-800
+              p-6
+              md:p-8
+              flex
+              flex-col
+              md:flex-row
+              gap-5
+              md:items-center
+              md:justify-between
+            "
           >
-            Confirmar compra
-          </button>
 
-        </div>
+            <div>
+
+              <p
+                className="
+                  text-gray-500
+                  dark:text-gray-400
+                  text-sm
+                "
+              >
+                Total de la compra
+              </p>
+
+              <h2
+                className="
+                  text-4xl
+                  font-black
+                  dark:text-white
+                "
+              >
+                $
+                {total.toLocaleString(
+                  "es-CO"
+                )}
+              </h2>
+
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              className="
+                bg-black
+                hover:bg-gray-800
+                text-white
+                px-8
+                py-5
+                rounded-2xl
+                transition
+                font-bold
+                text-lg
+                shadow-lg
+              "
+            >
+              Confirmar compra
+            </button>
+
+          </div>
+
+        )}
 
       </div>
+
     </main>
+
   );
+
 }
 
 export default Checkout;
